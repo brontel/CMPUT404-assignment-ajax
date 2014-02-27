@@ -22,7 +22,7 @@
 
 
 import flask
-from flask import Flask, request
+from flask import Flask, request, redirect, url_for
 import json
 app = Flask(__name__)
 app.debug = True
@@ -55,7 +55,7 @@ class World:
         return self.space
 
 # you can test your webservice from the commandline
-# curl -v   -H "Content-Type: appication/json" -X PUT http://127.0.0.1:5000/entity/X -d '{"x":1,"y":1}' 
+# curl -v   -H "Content-Type: application/json" -X PUT http://127.0.0.1:5000/entity/X -d '{"x":1,"y":1}' 
 
 myWorld = World()          
 
@@ -73,28 +73,48 @@ def flask_post_json():
 
 @app.route("/")
 def hello():
-    '''Return something coherent here.. perhaps redirect to /static/index.html '''
-    return None
+    '''Redirect to /static/index.html '''
+    return redirect(url_for('static', filename='index.html'))
 
 @app.route("/entity/<entity>", methods=['POST','PUT'])
 def update(entity):
     '''update the entities via this interface'''
-    return None
+    # Get the JSON request. flask_post_json returns a dictionary
+    new_entity = flask_post_json()
+
+    # Update The World: Add the new entity's keys (such as x & y coords)
+    for key in new_entity.keys():
+        myWorld.update(entity, key, new_entity[key]);
+
+    # Convert to new entity to JSON and return it
+    return json.dumps( myWorld.get(entity) )
 
 @app.route("/world", methods=['POST','GET'])    
 def world():
-    '''you should probably return the world here'''
-    return None
+    '''
+    you should probably return the world here
+    Return the dictionary of entities and coords
+    '''
+    # Get the world: dictionary of entities, each entity with its coords
+    # And convert to JSON
+    return json.dumps( myWorld.world() )
 
 @app.route("/entity/<entity>")    
 def get_entity(entity):
-    '''This is the GET version of the entity interface, return a representation of the entity'''
-    return None
+    '''
+    This is the GET version of the entity interface, return a representation 
+    of the entity. 
+    '''
+    # Obtain The World's dictionary of its entities, and convert to JSON
+    return json.dumps( myWorld.get(entity) )
 
 @app.route("/clear", methods=['POST','GET'])
 def clear():
     '''Clear the world out!'''
-    return None
+    myWorld.clear()
+
+    # Return the empty JSON World
+    return json.dumps( myWorld.world() )
 
 if __name__ == "__main__":
     app.run()
