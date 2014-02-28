@@ -6,7 +6,7 @@
     <meta content='width=device-width; height=device-height; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;' name='viewport' />
     <meta name="viewport" content="width=device-width" />
     <meta name="license" content="
-        Copyright 2013 Abram Hindle
+        Copyright 2013 Abram Hindle, Bronte Lee, Stephanie Gil
         
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -34,14 +34,16 @@ var H = canvas.height = window.innerHeight-50;
 
 function sendJSONXMLHTTPRequest(url, objects, callback) {
     var xhr = new XMLHttpRequest();
+
     xhr.onreadystatechange = function () {
         if (xhr.readyState==4) {
             try {
                 if (xhr.status==200) {
                     //XXX: parse some JSON from the request!
-                    var newObj = JSON.parse();
-                    //XXX: Pass the data to the callback!
+                    var newObj = JSON.parse(xhr.responseText);
 
+                    //XXX: Pass the data to the callback!
+                    callback(newObj);                    
                 }
             } 
             catch(e) {
@@ -50,9 +52,11 @@ function sendJSONXMLHTTPRequest(url, objects, callback) {
         }
     };
     //XXX: POST to a URL
-
-    //XXX: set the mimetype and the accept headers!
-    // Remember to use application/json !
+    xhr.open('POST', url);          
+    xhr.setRequestHeader("Content-type","application/json");
+ 
+    // finally send it
+    xhr.send(objects);    
 }
 
 
@@ -140,8 +144,9 @@ function getPosition(e) {
 function addEntity(entity, data) {
     world[entity] = data;
     drawNextFrame(); // (but should we?)
-    //XXX: Send a XHTML Request that updates the entity you just  modified!
-    //url_for('entity');
+
+    sendJSONXMLHTTPRequest('/entity/' + entity, JSON.stringify(data), 
+        function(x) {});
 }
 
 var counter = 0;
@@ -270,29 +275,14 @@ mouse.mousedraggers.push(function(x,y,clicked,e) {
 
 function update() {
     //XXX: TODO Get the world from the webservice using a XMLHTTPRequest
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', '/world');          
-    xhr.onreadystatechange = function(){
-        // readystate tells you how the transfer is going
-        // 4 is done
-        if( xhr.readyState === 4 ){
-            // This is the HTTP Code
-            if(xhr.status === 200){
-                world = JSON.parse(xhr.responseText);                                     
-            } else {
-                alert("There was an error " + xhr.status);
-            }
-        }
-    };
+    sendJSONXMLHTTPRequest('/world', null, function(newWorld) { 
+        world = newWorld; });
 
-    // finally send it
-    xhr.send(null);    
-    
     drawFrame();
 }
 
 // 30 frames per second
-setInterval( update, 1000/30);
+setInterval( update, 1000);
 
 
 
