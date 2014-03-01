@@ -65,15 +65,18 @@ world = {};
 //XXX: TODO Make this prettier!
 function drawCircle(context,entity) {
     with(context) {
+        var gradient = createRadialGradient(entity["x"], entity["y"], 
+                                            entity["radius"], entity["x"], 
+                                            entity["y"], 0);
+        gradient.addColorStop(0, entity["colour"]);
+        gradient.addColorStop(1, "white");
         beginPath();              
-        lineWidth = 3;
         var x = entity["x"];
         var y = entity["y"];
         //moveTo(x,y);
-        fillStyle = entity["colour"];
-        strokeStyle = fillStyle;
-        arc(x, y, (entity["radius"])?entity["radius"]:50, 0, 2 * Math.PI, false);  
-        stroke();                                
+        fillStyle = gradient;
+        arc(x, y, (entity["radius"])?entity["radius"]:8, 0, 2 * Math.PI);
+        fill();                    
     }
 }
 
@@ -82,7 +85,7 @@ function prepEntity(entity) {
         entity["colour"] = "#FF0000";
     }
     if (!entity["radius"]) {
-        entity["radius"] = 20;
+        entity["radius"] = 8;
     }
     return entity;
 }
@@ -90,7 +93,7 @@ function prepEntity(entity) {
 function clearFrame() {
     with(context) {
 	moveTo(0,0);
-	fillStyle = "#300";
+	fillStyle = "#3B444B";
 	fillRect(0,0,W,H);
     }
 
@@ -254,22 +257,24 @@ mouse = (function() {
 
 // Add the application specific mouse listeners!
 //XXX: TODO Make these prettier!
+// Start Point
 mouse.mousedowners.push(function(x,y,clicked,e) {
-    addEntityWithoutName({'x':x,'y':y,'colour':'#FF5108'});
+    addEntityWithoutName({'x':x,'y':y,'colour':'#7BB661'});
 });
 
+// End Point
 mouse.mouseuppers.push(function(x,y,clicked,e) {
     addEntityWithoutName({'x':x,'y':y,'colour':'#50BFED'});
 });
 
 mouse.mousedraggers.push(function(x,y,clicked,e) {
     // Having circles that change colour would be neat?
-    var new_colour = Math.floor((Math.random()*255));
+    var new_colour = Math.floor((Math.random()*150)+50);
 
     // Only make the red change values
-    var the_colour = "rgb(" + new_colour + ", 70, 70)";
+    var the_colour = "rgb( 0, 100," + new_colour + " )";
     addEntityWithoutName({'x':x,'y':y,'colour':the_colour,
-                          'radius':5});
+                          'radius':8});
 });
 
 
