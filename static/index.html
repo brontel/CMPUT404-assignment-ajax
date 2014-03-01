@@ -271,14 +271,28 @@ mouse.mousedraggers.push(function(x,y,clicked,e) {
 function update() {
     //XXX: TODO Get the world from the webservice using a XMLHTTPRequest
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', world.json);
-    
+    xhr.open('GET', '/world');          
+    xhr.onreadystatechange = function(){
+        // readystate tells you how the transfer is going
+        // 4 is done
+        if( xhr.readyState === 4 ){
+            // This is the HTTP Code
+            if(xhr.status === 200){
+                world = JSON.parse(xhr.responseText);                                     
+            } else {
+                alert("There was an error " + xhr.status);
+            }
+        }
+    };
 
+    // finally send it
+    xhr.send(null);    
+    
     drawFrame();
 }
 
 // 30 frames per second
-setInterval( update, 1000/30.0);
+setInterval( update, 1000/30);
 
 
 
